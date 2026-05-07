@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chowk Market</title>
+    
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Yatra+One&family=Spectral:wght@400;700&family=Cinzel:wght@700&display=swap');
+        body { margin: 0; padding: 0; background: #1A0F0A; font-family: 'Spectral', serif; color: #F5EDD9; }
+        #root { min-height: 100vh; display: flex; flex-direction: column; }
+        .error-box { background: #7A1818; color: white; padding: 20px; margin: 20px; border: 2px solid #DAA520; font-family: monospace; }
+        button { cursor: pointer; border: none; }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div id="loading-state" style="text-align: center; padding-top: 100px;">
+            <div style="color: #DAA520; font-size: 24px; font-family: 'Yatra One', serif;">Chowk is Loading...</div>
+            <p style="color: #DAA520; opacity: 0.6;">If this stays for more than 5 seconds, check your internet or browser console.</p>
+        </div>
+    </div>
+
+    <script type="text/babel">
+        // Use a try-catch block to help find errors
+        try {
+            const { useState } = React;
+
+            /* ── ISO MATH ── */
+            const TW=40, TH=20, HU=26, OX=220, OY=150;
+            const iso = (c,r,h) => {
+                const height = h || 0;
+                return { x: OX+(c-r)*TW/2, y: OY+(c+r)*TH/2-height*HU };
+            };
+            const pts = (arr) => arr.map(p => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+
+            /* ── DATA ── */
+            const SHOPS = [
+                { id: "lakshmi", name: "Lakshmi", fullName: "Lakshmi Vegetables", tamil: "லட்சுமி காய்கறிகள்", emoji: "🥬", col: 0, row: 0, w: 3, d: 2, h: 3, color: "#D8B830", products: ["Tomato", "Spinach", "Potato"] },
+                { id: "chai", name: "Chai Corner", fullName: "Chai Corner", tamil: "சாய் கார்னர்", emoji: "☕", col: 4, row: 0, w: 2, d: 2, h: 2, color: "#F0A83B", products: ["Masala Chai", "Filter Coffee"] }
+            ];
+
+            /* ── COMPONENTS ── */
+            function Building({ shop, onClick }) {
+                const { col:c, row:r, w, d, h, color } = shop;
+                const F = [iso(c,r,0), iso(c+w,r,0), iso(c+w,r,h), iso(c,r,h)];
+                const L = [iso(c,r,0), iso(c,r,h), iso(c,r+d,h), iso(c,r+d,0)];
+                const T = [iso(c,r,h), iso(c+w,r,h), iso(c+w,r+d,h), iso(c,r+d,h)];
+                
+                return (
+                    <g onClick={onClick} style={{cursor:"pointer"}}>
+                        <polygon points={pts(L)} fill={color} opacity="0.7" stroke="#1A0F0A" strokeWidth="0.5" />
+                        <polygon points={pts(F)} fill={color} opacity="0.9" stroke="#1A0F0A" strokeWidth="0.5" />
+                        <polygon points={pts(T)} fill={color} stroke="#1A0F0A" strokeWidth="0.5" />
+                        <text x={iso(c+w/2,r,h+0.5).x} y={iso(c+w/2,r,h+0.5).y} textAnchor="middle" fontSize="8" fontWeight="bold" fill="#1A0F0A" style={{userSelect:"none"}}>{shop.name}</text>
+                    </g>
+                );
+            }
+
+            function App() {
+                const [view, setView] = useState("map");
+                const [selected, setSelected] = useState(null);
+
+                const openShop = (id) => {
+                    setSelected(SHOPS.find(s => s.id === id));
+                    setView("store");
+                };
+
+                return (
+                    <div style={{ maxWidth: 440, margin: "0 auto", background: "#F5EDD9", minHeight: "100vh", color: "#1A0F0A" }}>
+                        {view === "map" ? (
+                            <div>
+                                <header style={{ background: "#7A1818", padding: "20px", color: "#DAA520", textAlign: "center" }}>
+                                    <h1 style={{ fontFamily: "'Yatra One', serif", margin: 0, fontSize: "32px" }}>Chowk</h1>
+                                    <p style={{ margin: 0, fontSize: "10px", letterSpacing: "2px" }}>EC PHASE 1</p>
+                                </header>
+                                
+                                <div style={{ background: "#E0D5C0", borderBottom: "2px solid #1A0F0A10" }}>
+                                    <svg viewBox="0 0 440 320" style={{ width: "100%", height: "auto" }}>
+                                        <polygon points={pts([iso(-1,2,0), iso(12,2,0), iso(12,4,0), iso(-1,4,0)])} fill="#B8A898" />
+                                        {SHOPS.map(s => <Building key={s.id} shop={s} onClick={() => openShop(s.id)} />)}
+                                    </svg>
+                                </div>
+
+                                <div style={{ padding: "20px" }}>
+                                    <h3 style={{ fontFamily: "'Cinzel', serif", fontSize: "12px", color: "#7A1818" }}>॥ LOCAL SHOPS ॥</h3>
+                                    {SHOPS.map(s => (
+                                        <div key={s.id} onClick={() => openShop(s.id)} style={{ background: "white", padding: "15px", marginBottom: "10px", display: "flex", alignItems: "center", border: "1px solid #1A0F0A10", cursor: "pointer" }}>
+                                            <span style={{ fontSize: "30px" }}>{s.emoji}</span>
+                                            <div style={{ marginLeft: "15px" }}>
+                                                <div style={{ fontFamily: "'Yatra One', serif", fontSize: "18px" }}>{s.fullName}</div>
+                                                <div style={{ fontSize: "12px", color: "#7A1818" }}>{s.tamil}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ background: "#F5EDD9", minHeight: "100vh" }}>
+                                <nav style={{ background: "#7A1818", padding: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
+                                    <button onClick={() => setView("map")} style={{ background: "#DAA520", color: "#1A0F0A", padding: "5px 10px", fontWeight: "bold", borderRadius: "4px" }}>← BACK</button>
+                                    <span style={{ color: "white", fontFamily: "'Yatra One', serif", fontSize: "20px" }}>{selected.name}</span>
+                                </nav>
+                                <div style={{ padding: "20px" }}>
+                                    <div style={{ background: selected.color, padding: "30px", textAlign: "center", border: "2px solid #1A0F0A" }}>
+                                        <div style={{ fontSize: "50px" }}>{selected.emoji}</div>
+                                        <h2 style={{ fontFamily: "'Yatra One', serif", margin: "10px 0 0" }}>{selected.fullName}</h2>
+                                        <p style={{ margin: 0, opacity: 0.7 }}>{selected.tamil}</p>
+                                    </div>
+                                    <div style={{ marginTop: "20px" }}>
+                                        {selected.products.map((p, i) => (
+                                            <div key={i} style={{ background: "white", padding: "15px", marginBottom: "8px", border: "1px solid #1A0F0A10", display: "flex", justifyContent: "space-between" }}>
+                                                <span>{p}</span>
+                                                <button style={{ color: "#7A1818", fontWeight: "bold", background: "none" }}>ADD +</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+
+        } catch (err) {
+            document.getElementById('root').innerHTML = '<div class="error-box"><b>Code Error:</b><br/>' + err.message + '</div>';
+        }
+    </script>
+</body>
+</html>
